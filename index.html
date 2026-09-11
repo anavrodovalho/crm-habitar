@@ -139,8 +139,22 @@ select.fsel.on{border-color:var(--teal-600);color:var(--teal-700);font-weight:50
 .toggle input{accent-color:var(--or-600);margin:0}
 #btn-filtros-mobile{display:none}
 
+/* ---------- Alternar visão ---------- */
+.visoes{
+  display:inline-flex;border:1px solid var(--line-2);border-radius:9px;
+  overflow:hidden;background:#fff;flex:0 0 auto
+}
+.visoes button{
+  border:0;background:transparent;padding:7px 13px;font-size:13.5px;font-weight:500;
+  color:var(--muted);white-space:nowrap
+}
+.visoes button + button{border-left:1px solid var(--line-2)}
+.visoes button:hover{background:var(--teal-50);color:var(--teal-700)}
+.visoes button.on{background:var(--teal-700);color:#fff}
+
 /* ---------- Abas (mobile) ---------- */
 #tabs{display:none;gap:7px;padding:9px 12px;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line)}
+body.visao-grade #tabs{display:flex;padding:10px 16px}
 .tab{
   border:1px solid var(--line-2);background:#fff;border-radius:20px;padding:6px 12px;
   white-space:nowrap;font-weight:500;color:var(--ink-2);font-size:13px
@@ -190,6 +204,39 @@ select.fsel.on{border-color:var(--teal-600);color:var(--teal-700);font-weight:50
   padding:3px 9px;font-size:11.5px;font-weight:600
 }
 .col-toggle:hover{background:rgba(255,255,255,.36)}
+
+/* ---------- Visão por etapa (grade) ---------- */
+body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
+.grade-topo{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:16px 16px 0
+}
+.grade-titulo{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:600;color:var(--ink)}
+.grade-titulo .bolinha{width:11px;height:11px;border-radius:50%;background:var(--c);flex:0 0 11px}
+.grade-contagem{font-size:13px;color:var(--muted)}
+.grade-contagem b{color:var(--ink);font-weight:600}
+.grade{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));
+  gap:12px;padding:14px 16px 0;align-items:start
+}
+.grade-vazio{
+  margin:16px;padding:34px 18px;text-align:center;color:var(--muted);font-size:14px;
+  border:1px dashed var(--line-2);border-radius:12px;background:rgba(255,255,255,.6)
+}
+.card.compacto .next{margin-top:7px}
+.card.compacto .next .tx{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.card.compacto .acts{margin-top:8px}
+.detalhes-btn{
+  border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:8px 10px;
+  font-size:11.5px;color:var(--muted);white-space:nowrap
+}
+.detalhes-btn:hover{border-color:var(--teal-500);color:var(--teal-700)}
+@media (max-width:767px){
+  .grade{grid-template-columns:1fr;padding:12px 12px 0;gap:10px}
+  .grade-topo{padding:14px 12px 0}
+}
 
 /* ---------- Card ---------- */
 .card{
@@ -400,6 +447,10 @@ select.fsel.on{border-color:var(--teal-600);color:var(--teal-700);font-weight:50
       <div class="brand"><span class="logo">&#127968;</span> CRM Habitar</div>
       <div id="upd" class="upd"></div>
       <div class="spacer"></div>
+      <div class="visoes" role="group" aria-label="Modo de visualiza&ccedil;&atilde;o">
+        <button type="button" class="on" data-visao="quadro">Quadro</button>
+        <button type="button" data-visao="grade">Por etapa</button>
+      </div>
       <button id="btn-filtros-mobile" class="btn" type="button">Filtros</button>
       <button id="btn-config" class="btn" type="button" title="Trocar o link ou a senha da planilha">&#9881;</button>
       <button id="btn-reload" class="btn primary" type="button"><span id="reload-ic">&#8635;</span> Atualizar</button>
@@ -449,6 +500,7 @@ const LS_NOTES   = 'crm_habitar_notas';
 const LS_CACHE   = 'crm_habitar_cache';
 const LS_FILTERS = 'crm_habitar_filtros';
 const LS_CONFIG  = 'crm_habitar_config';
+const LS_VISAO   = 'crm_habitar_visao';
 
 /* Configuracao ativa (preenchida no init) */
 const cfg = { url: '', token: '' };
@@ -458,6 +510,7 @@ const BASE_STATUS = [
   { name:'Em Contato',       color:'#ea580c' },
   { name:'Visita Agendada',  color:'#0d9488' },
   { name:'Visita Realizada', color:'#4f46e5' },
+  { name:'Desqualificado',   color:'#a16207' },
   { name:'Fechado',          color:'#16a34a' },
   { name:'Perdido',          color:'#64748b' }
 ];
@@ -476,6 +529,7 @@ const state = {
   expanded: {},       // id+':sum' / id+':hist'
   showLost: false,
   activeTab: null,
+  visao: 'quadro',    // 'quadro' = kanban | 'grade' = uma etapa por vez, em linhas e colunas
   filters: { q:'', temp:'', prop:'', orig:'', tipo:'', owner:'', fu:false, quick:'' }
 };
 
@@ -874,9 +928,11 @@ function filtrosAtivos(){
 function salvarFiltros(){ lsSet(LS_FILTERS, state.filters); }
 
 /* ================= CARD ================= */
-function cardHTML(l){
+/* nomes = lista de status (calculada uma vez por render)
+   compacto = card enxuto da visão por etapa, sem resumo/histórico/nota */
+function cardHTML(l, nomes, compacto){
   const busy = !!state.pending[l.id];
-  const cols = colunas().map(c => c.name);
+  const cols = nomes || colunas().map(c => c.name);
   const idx  = cols.indexOf(l.status);
   const fs   = fuState(l);
 
@@ -919,8 +975,21 @@ function cardHTML(l){
   const prevStatus = idx > 0 ? cols[idx - 1] : '';
   const nextStatus = idx >= 0 && idx < cols.length - 1 ? cols[idx + 1] : '';
 
+  const miolo = compacto ? '' : (
+    (l.summary
+      ? '<div class="summ' + (sumAberto ? '' : ' clamp') + '">' + esc(l.summary) + '</div>' +
+        '<button class="lk" type="button" data-act="more">' + (sumAberto ? 'ver menos' : 'ver mais') + '</button>'
+      : '') +
+    (vals.length ? '<div class="vals">' + vals.join('') + '</div>' : '') +
+    histHTML +
+    '<div class="note-wrap">' +
+      '<textarea data-note="' + esc(l.id) + '" rows="1" placeholder="Nota pessoal (s&oacute; neste navegador)">' + esc(nota) + '</textarea>' +
+      '<span class="saved">Salvo</span>' +
+    '</div>'
+  );
+
   return '<article class="card' + (l.status === 'Fechado' ? ' is-closed' : '') + (busy ? ' busy' : '') +
-         '" data-id="' + esc(l.id) + '">' +
+         (compacto ? ' compacto' : '') + '" data-id="' + esc(l.id) + '">' +
     (busy ? '<div class="card-spin"></div>' : '') +
     '<div class="card-top">' +
       '<div class="avatar' + (l.semNome ? ' none' : '') + '">' + (l.semNome ? '?' : esc(iniciais(l.name))) + '</div>' +
@@ -933,16 +1002,7 @@ function cardHTML(l){
     (l.property ? '<div class="prop"><span>&#127959;</span> ' + esc(l.property) + '</div>' : '') +
     fuHTML +
     (l.nextStep ? '<div class="next"><span class="lb">Pr&oacute;ximo passo</span><span class="tx">' + esc(l.nextStep) + '</span></div>' : '') +
-    (l.summary
-      ? '<div class="summ' + (sumAberto ? '' : ' clamp') + '">' + esc(l.summary) + '</div>' +
-        '<button class="lk" type="button" data-act="more">' + (sumAberto ? 'ver menos' : 'ver mais') + '</button>'
-      : '') +
-    (vals.length ? '<div class="vals">' + vals.join('') + '</div>' : '') +
-    histHTML +
-    '<div class="note-wrap">' +
-      '<textarea data-note="' + esc(l.id) + '" rows="1" placeholder="Nota pessoal (s&oacute; neste navegador)">' + esc(nota) + '</textarea>' +
-      '<span class="saved">Salvo</span>' +
-    '</div>' +
+    miolo +
     '<div class="acts">' +
       '<button class="mvb" type="button" data-act="mv" data-to="' + esc(prevStatus) + '"' + (prevStatus ? '' : ' disabled') +
         ' title="' + (prevStatus ? 'Mover para ' + esc(prevStatus) : '') + '">&larr;</button>' +
@@ -954,8 +1014,11 @@ function cardHTML(l){
         ' title="' + (nextStatus ? 'Mover para ' + esc(nextStatus) : '') + '">&rarr;</button>' +
     '</div>' +
     '<div class="acts">' +
-      '<a class="wa" href="' + esc(l.waLink) + '" target="_blank" rel="noopener">&#128172; Abrir no WhatsApp</a>' +
-      '<button class="cpy" type="button" data-act="copy">Copiar telefone</button>' +
+      '<a class="wa" href="' + esc(l.waLink) + '" target="_blank" rel="noopener">&#128172; ' +
+        (compacto ? 'WhatsApp' : 'Abrir no WhatsApp') + '</a>' +
+      (compacto
+        ? '<button class="detalhes-btn" type="button" data-act="detalhes">Detalhes</button>'
+        : '<button class="cpy" type="button" data-act="copy">Copiar telefone</button>') +
     '</div>' +
   '</article>';
 }
@@ -984,19 +1047,21 @@ function renderTabs(grupos, cols){
   ).join('');
 }
 
-function renderBoard(){
-  const board = $('#board');
+function esconderVerMais(board){
+  // "ver mais" so aparece quando o texto realmente foi cortado
+  $$('.card', board).forEach(card => {
+    const s = $('.summ', card), b = $('[data-act="more"]', card);
+    if (s && b && s.classList.contains('clamp') && s.scrollHeight <= s.clientHeight + 1) b.classList.add('hidden');
+  });
+}
+
+function renderQuadro(board, cols, nomes, grupos){
   const scrolls = {};
-  $$('.col', board).forEach(c => { scrolls[c.getAttribute('data-col')] = $('.col-body', c) ? $('.col-body', c).scrollTop : 0; });
+  $$('.col', board).forEach(c => {
+    const b = $('.col-body', c);
+    scrolls[c.getAttribute('data-col')] = b ? b.scrollTop : 0;
+  });
   const scrollX = board.scrollLeft;
-
-  const cols = colunas();
-  const grupos = {};
-  cols.forEach(c => grupos[c.name] = []);
-  leadsVisiveis().forEach(l => { if (grupos[l.status]) grupos[l.status].push(l); });
-  cols.forEach(c => grupos[c.name].sort(ordenar));
-
-  if (!state.activeTab || !cols.some(c => c.name === state.activeTab)) state.activeTab = cols[0].name;
 
   board.innerHTML = cols.map(c => {
     const itens = grupos[c.name];
@@ -1013,16 +1078,14 @@ function renderBoard(){
           : '<span class="cnt">' + itens.length + '</span>') +
       '</div>' +
       '<div class="col-body">' +
-        (itens.length ? itens.map(cardHTML).join('') : '<div class="col-empty">Nenhum lead aqui</div>') +
+        (itens.length
+          ? itens.map(l => cardHTML(l, nomes, false)).join('')
+          : '<div class="col-empty">Nenhum lead aqui</div>') +
       '</div>' +
     '</section>';
   }).join('');
 
-  // "ver mais" so aparece quando o texto realmente foi cortado
-  $$('.card', board).forEach(card => {
-    const s = $('.summ', card), b = $('[data-act="more"]', card);
-    if (s && b && s.classList.contains('clamp') && s.scrollHeight <= s.clientHeight + 1) b.classList.add('hidden');
-  });
+  esconderVerMais(board);
 
   $$('.col', board).forEach(c => {
     const b = $('.col-body', c);
@@ -1030,6 +1093,55 @@ function renderBoard(){
     if (b && scrolls[k]) b.scrollTop = scrolls[k];
   });
   board.scrollLeft = scrollX;
+}
+
+function renderGrade(board, cols, nomes, grupos){
+  const etapa = cols.filter(c => c.name === state.activeTab)[0] || cols[0];
+  const itens = grupos[etapa.name] || [];
+  const totalEtapa = state.leads.filter(l => l.status === etapa.name).length;
+  const filtrando = itens.length !== totalEtapa;
+
+  board.innerHTML =
+    '<div class="grade-topo">' +
+      '<div class="grade-titulo" style="--c:' + etapa.color + '">' +
+        '<span class="bolinha"></span>' + esc(etapa.name) +
+      '</div>' +
+      '<div class="grade-contagem">' +
+        (filtrando
+          ? 'mostrando <b>' + itens.length + '</b> de ' + totalEtapa + ' (filtros ativos)'
+          : '<b>' + itens.length + '</b> ' + (itens.length === 1 ? 'lead nesta etapa' : 'leads nesta etapa')) +
+      '</div>' +
+    '</div>' +
+    (itens.length
+      ? '<div class="grade">' + itens.map(l => {
+          const aberto = !!state.expanded[l.id + ':full'];
+          return cardHTML(l, nomes, !aberto);
+        }).join('') + '</div>'
+      : '<div class="grade-vazio">' +
+          (filtrando
+            ? 'Nenhum lead desta etapa passa pelos filtros atuais.'
+            : 'Nenhum lead em ' + esc(etapa.name) + ' por enquanto.') +
+        '</div>');
+
+  esconderVerMais(board);
+}
+
+function renderBoard(){
+  const board = $('#board');
+  document.body.classList.toggle('visao-grade', state.visao === 'grade');
+
+  const cols = colunas();
+  const nomes = cols.map(c => c.name);
+  const grupos = {};
+  cols.forEach(c => grupos[c.name] = []);
+  leadsVisiveis().forEach(l => { if (grupos[l.status]) grupos[l.status].push(l); });
+  cols.forEach(c => grupos[c.name].sort(ordenar));
+
+  if (!state.activeTab || nomes.indexOf(state.activeTab) === -1) state.activeTab = nomes[0];
+
+  if (state.visao === 'grade') renderGrade(board, cols, nomes, grupos);
+  else renderQuadro(board, cols, nomes, grupos);
+
   renderTabs(grupos, cols);
 }
 
@@ -1085,11 +1197,7 @@ async function carregar(){
 
 async function moverLead(id, novoStatus){
   const l = state.leads.find(x => x.id === id);
-  if (!l || l.status === novoStatus || state.pending[id]) return;
-  if (STATUS_VALIDOS.indexOf(novoStatus) === -1){
-    toast('Status não aceito pela planilha: ' + novoStatus, 'err');
-    return;
-  }
+  if (!l || !novoStatus || l.status === novoStatus || state.pending[id]) return;
   const anterior = l.status;
   l.status = novoStatus;              // atualizacao otimista
   state.pending[id] = true;
@@ -1113,7 +1221,14 @@ async function moverLead(id, novoStatus){
     toast(l.name.split(' ')[0] + ' -> ' + novoStatus, 'ok');
   } catch (e){
     l.status = anterior;              // desfaz
-    toast('Não foi possível salvar na planilha', 'err');
+    const motivo = (e && e.message) || '';
+    if (motivo === 'status_invalido'){
+      toast('A planilha ainda não aceita "' + novoStatus + '" — o script precisa liberar esse status', 'err');
+    } else if (motivo === 'lead_nao_encontrado'){
+      toast('Não achei esse telefone na planilha — talvez a linha tenha sido apagada', 'err');
+    } else {
+      toast('Não foi possível salvar na planilha', 'err');
+    }
   } finally {
     delete state.pending[id];
     render();
@@ -1127,6 +1242,18 @@ function ligarEventos(){
   $('#btn-reload').addEventListener('click', carregar);
 
   $('#btn-config').addEventListener('click', () => abrirConfig(true));
+
+  $$('.visoes button').forEach(b => {
+    b.addEventListener('click', () => {
+      const v = b.getAttribute('data-visao');
+      if (state.visao === v) return;
+      state.visao = v;
+      lsSet(LS_VISAO, v);
+      $$('.visoes button').forEach(x => x.classList.toggle('on', x === b));
+      window.scrollTo(0, 0);
+      render();
+    });
+  });
 
   $('#btn-filtros-mobile').addEventListener('click', () => {
     $('#filterbar').classList.toggle('collapsed');
@@ -1195,6 +1322,9 @@ function ligarEventos(){
 
     const hist = e.target.closest('[data-act="hist"]');
     if (hist){ state.expanded[id + ':hist'] = !state.expanded[id + ':hist']; render(); return; }
+
+    const det = e.target.closest('[data-act="detalhes"]');
+    if (det){ state.expanded[id + ':full'] = !state.expanded[id + ':full']; render(); return; }
 
     const mv = e.target.closest('[data-act="mv"]');
     if (mv){ const to = mv.getAttribute('data-to'); if (to) moverLead(id, to); return; }
@@ -1380,6 +1510,10 @@ function iniciarApp(){
 
   const salvos = lsGet(LS_FILTERS, null);
   if (salvos) Object.keys(state.filters).forEach(k => { if (salvos[k] !== undefined) state.filters[k] = salvos[k]; });
+
+  const visaoSalva = lsGet(LS_VISAO, null);
+  if (visaoSalva === 'grade' || visaoSalva === 'quadro') state.visao = visaoSalva;
+  $$('.visoes button').forEach(b => b.classList.toggle('on', b.getAttribute('data-visao') === state.visao));
 
   ligarEventos();
 
