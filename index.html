@@ -137,6 +137,21 @@ select.fsel.on{border-color:var(--teal-600);color:var(--teal-700);font-weight:50
 }
 .toggle.on{background:var(--or-50);border-color:var(--or-500);color:var(--or-700)}
 .toggle input{accent-color:var(--or-600);margin:0}
+.ord{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);
+  border-radius:9px;padding:0 4px 0 11px;background:#fff
+}
+.ord > span{
+  font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;
+  letter-spacing:.05em;white-space:nowrap
+}
+.ord select{
+  border:0;outline:0;background:transparent;padding:7px 4px;color:var(--ink-2);
+  max-width:180px;cursor:pointer
+}
+.ord.on{border-color:var(--teal-600);background:var(--teal-50)}
+.ord.on > span{color:var(--teal-700)}
+.ord.on select{color:var(--teal-700);font-weight:500}
 #btn-filtros-mobile{display:none}
 
 /* ---------- Alternar visão ---------- */
@@ -470,6 +485,18 @@ body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
       <select id="f-tipo" class="fsel"><option value="">Tipo</option></select>
       <select id="f-owner" class="fsel"><option value="">Responsável</option></select>
       <label id="f-fu-wrap" class="toggle"><input id="f-fu" type="checkbox"> Só follow-up atrasado/hoje</label>
+      <label id="f-ordem-wrap" class="ord" title="Como os leads são ordenados dentro de cada etapa">
+        <span>Ordenar</span>
+        <select id="f-ordem">
+          <option value="urgencia">Urgência (padrão)</option>
+          <option value="recentes">Mais recentes</option>
+          <option value="antigos">Mais antigos</option>
+          <option value="nome">Nome (A–Z)</option>
+          <option value="temperatura">Temperatura</option>
+          <option value="followup">Follow-up mais próximo</option>
+          <option value="orcamento">Maior orçamento</option>
+        </select>
+      </label>
       <button id="f-clear" class="btn" type="button">Limpar filtros</button>
     </div>
   </div>
@@ -501,6 +528,7 @@ const LS_CACHE   = 'crm_habitar_cache';
 const LS_FILTERS = 'crm_habitar_filtros';
 const LS_CONFIG  = 'crm_habitar_config';
 const LS_VISAO   = 'crm_habitar_visao';
+const LS_ORDEM   = 'crm_habitar_ordem';
 
 /* Configuracao ativa (preenchida no init) */
 const cfg = { url: '', token: '' };
@@ -530,6 +558,7 @@ const state = {
   showLost: false,
   activeTab: null,
   visao: 'quadro',    // 'quadro' = kanban | 'grade' = uma etapa por vez, em linhas e colunas
+  ordem: 'urgencia',  // chave de ORDENS
   filters: { q:'', temp:'', prop:'', orig:'', tipo:'', owner:'', fu:false, quick:'' }
 };
 
@@ -761,6 +790,14 @@ function colunas(){
 
 /* ---------------- ordenacao dentro da coluna ---------------- */
 const TEMP_RANK = { quente:0, morno:1, frio:2, cliente:3, '':4 };
+
+/* compara sem risco de NaN (Infinity - Infinity) */
+function cmp(x, y){ return x < y ? -1 : (x > y ? 1 : 0); }
+/* leads sem data: 'fim' define se afundam (-Infinity) ou sobem (Infinity) */
+function tsData(l, fim){ return l.date ? l.date.getTime() : fim; }
+/* desempate comum: lead mais recente primeiro; empate final = ordem da planilha */
+function maisRecente(a, b){ return cmp(tsData(b, -Infinity), tsData(a, -Infinity)); }
+
 function ordenar(a, b){
   const ga = { late:0, today:1 }[fuState(a)]; const gb = { late:0, today:1 }[fuState(b)];
   const pa = ga === undefined ? 2 : ga, pb = gb === undefined ? 2 : gb;
@@ -768,8 +805,56 @@ function ordenar(a, b){
   if (pa === 0){ const d = fuDias(b) - fuDias(a); if (d) return d; } // mais atrasado primeiro
   const t = TEMP_RANK[a.temperature] - TEMP_RANK[b.temperature];
   if (t) return t;
-  const da = a.date ? a.date.getTime() : 0, db = b.date ? b.date.getTime() : 0;
-  return db - da;
+  return maisRecente(a, b);
+}
+
+const ORDENS = {
+  urgencia: {
+    rotulo: 'urgência',
+    fn: ordenar
+  },
+  recentes: {
+    rotulo: 'data, mais recentes primeiro',
+    fn: maisRecente
+  },
+  antigos: {
+    rotulo: 'data, mais antigos primeiro',
+    fn: (a, b) => cmp(tsData(a, Infinity), tsData(b, Infinity)) // sem data vai para o fim
+  },
+  nome: {
+    rotulo: 'nome (A–Z)',
+    fn: (a, b) => {
+      if (a.semNome !== b.semNome) return a.semNome ? 1 : -1;   // sem nome no fim
+      const n = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      return n || maisRecente(a, b);
+    }
+  },
+  temperatura: {
+    rotulo: 'temperatura',
+    fn: (a, b) => (TEMP_RANK[a.temperature] - TEMP_RANK[b.temperature]) || maisRecente(a, b)
+  },
+  followup: {
+    rotulo: 'follow-up mais próximo',
+    fn: (a, b) => {
+      const fa = a.followUp ? a.followUp.getTime() : Infinity;  // sem follow-up no fim
+      const fb = b.followUp ? b.followUp.getTime() : Infinity;
+      return cmp(fa, fb) || maisRecente(a, b);
+    }
+  },
+  orcamento: {
+    rotulo: 'orçamento, maior primeiro',
+    fn: (a, b) => {
+      const va = moedaNum(a.budget), vb = moedaNum(b.budget);   // sem orçamento = 0, vai para o fim
+      return cmp(vb, va) || maisRecente(a, b);
+    }
+  }
+};
+
+function comparadorAtual(){
+  return (ORDENS[state.ordem] || ORDENS.urgencia).fn;
+}
+function rotuloOrdem(){
+  return (ORDENS[state.ordem] || ORDENS.urgencia).rotulo;
 }
 
 /* ---------------- filtros ---------------- */
@@ -916,6 +1001,8 @@ function renderFiltros(){
   $('#f-q').value = state.filters.q;
   $('#f-fu').checked = !!state.filters.fu;
   $('#f-fu-wrap').classList.toggle('on', !!state.filters.fu);
+  $('#f-ordem').value = state.ordem;
+  $('#f-ordem-wrap').classList.toggle('on', state.ordem !== 'urgencia');
   const n = filtrosAtivos();
   $('#btn-filtros-mobile').textContent = n ? 'Filtros (' + n + ')' : 'Filtros';
 }
@@ -975,7 +1062,14 @@ function cardHTML(l, nomes, compacto){
   const prevStatus = idx > 0 ? cols[idx - 1] : '';
   const nextStatus = idx >= 0 && idx < cols.length - 1 ? cols[idx + 1] : '';
 
-  const miolo = compacto ? '' : (
+  // no card compacto entram só os números que ajudam a decidir
+  const valsCompacto = [];
+  if (compacto && l.budget)      valsCompacto.push('<span>Or&ccedil;amento <b>' + esc(l.budget) + '</b></span>');
+  if (compacto && l.closedValue) valsCompacto.push('<span class="money">Fechado ' + esc(l.closedValue) + '</span>');
+
+  const miolo = compacto ? (
+    valsCompacto.length ? '<div class="vals">' + valsCompacto.join('') + '</div>' : ''
+  ) : (
     (l.summary
       ? '<div class="summ' + (sumAberto ? '' : ' clamp') + '">' + esc(l.summary) + '</div>' +
         '<button class="lk" type="button" data-act="more">' + (sumAberto ? 'ver menos' : 'ver mais') + '</button>'
@@ -1110,6 +1204,7 @@ function renderGrade(board, cols, nomes, grupos){
         (filtrando
           ? 'mostrando <b>' + itens.length + '</b> de ' + totalEtapa + ' (filtros ativos)'
           : '<b>' + itens.length + '</b> ' + (itens.length === 1 ? 'lead nesta etapa' : 'leads nesta etapa')) +
+        ' &middot; por ' + esc(rotuloOrdem()) +
       '</div>' +
     '</div>' +
     (itens.length
@@ -1135,7 +1230,8 @@ function renderBoard(){
   const grupos = {};
   cols.forEach(c => grupos[c.name] = []);
   leadsVisiveis().forEach(l => { if (grupos[l.status]) grupos[l.status].push(l); });
-  cols.forEach(c => grupos[c.name].sort(ordenar));
+  const comparador = comparadorAtual();
+  cols.forEach(c => grupos[c.name].sort(comparador));
 
   if (!state.activeTab || nomes.indexOf(state.activeTab) === -1) state.activeTab = nomes[0];
 
@@ -1294,6 +1390,13 @@ function ligarEventos(){
       el.classList.toggle('on', !!el.value);
       salvarFiltros(); render();
     });
+  });
+
+  $('#f-ordem').addEventListener('change', e => {
+    state.ordem = ORDENS[e.target.value] ? e.target.value : 'urgencia';
+    lsSet(LS_ORDEM, state.ordem);
+    $('#f-ordem-wrap').classList.toggle('on', state.ordem !== 'urgencia');
+    render();
   });
 
   $('#f-fu').addEventListener('change', e => {
@@ -1514,6 +1617,11 @@ function iniciarApp(){
   const visaoSalva = lsGet(LS_VISAO, null);
   if (visaoSalva === 'grade' || visaoSalva === 'quadro') state.visao = visaoSalva;
   $$('.visoes button').forEach(b => b.classList.toggle('on', b.getAttribute('data-visao') === state.visao));
+
+  const ordemSalva = lsGet(LS_ORDEM, null);
+  if (ordemSalva && ORDENS[ordemSalva]) state.ordem = ordemSalva;
+  $('#f-ordem').value = state.ordem;
+  $('#f-ordem-wrap').classList.toggle('on', state.ordem !== 'urgencia');
 
   ligarEventos();
 
