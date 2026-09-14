@@ -253,6 +253,227 @@ body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
   .grade-topo{padding:14px 12px 0}
 }
 
+/* =========================================================
+   PAINEL EXECUTIVO
+   Paletas validadas com o script do método de dataviz:
+   categórica (origem), rampa ordinal (funil), térmica (temperatura).
+   ========================================================= */
+body.visao-painel #filterbar,
+body.visao-painel #tabs,
+body.visao-painel #pills,
+body.visao-painel #board,
+body.visao-painel #btn-filtros-mobile{display:none !important}
+body.visao-painel #painel{display:block}
+
+#painel{
+  --s-bom:#0ca30c; --s-atencao:#fab219; --s-serio:#ec835a; --s-critico:#d03b3b;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#4a3aa7;
+  --f1:#86b6ef; --f2:#5598e7; --f3:#2a78d6; --f4:#1c5cab; --f5:#0d366b;
+  --tinta:#12222b; --tinta-2:#48606b; --tinta-3:#7a8f99;
+  --grade-linha:#e6ecee; --eixo:#c7d3d7;
+  max-width:1280px;margin:0 auto;padding:18px 16px 40px
+}
+
+/* --- barra de recorte --- */
+.pn-filtros{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;margin-bottom:16px
+}
+.pn-periodos{display:inline-flex;border:1px solid var(--line-2);border-radius:9px;overflow:hidden;background:#fff}
+.pn-periodos button{
+  border:0;background:transparent;padding:7px 13px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap
+}
+.pn-periodos button + button{border-left:1px solid var(--line-2)}
+.pn-periodos button:hover{background:var(--teal-50);color:var(--teal-700)}
+.pn-periodos button.on{background:var(--teal-700);color:#fff}
+.pn-filtros select{
+  border:1px solid var(--line-2);border-radius:9px;padding:7px 9px;background:#fff;color:var(--ink-2);max-width:200px
+}
+.pn-filtros select.on{border-color:var(--teal-600);color:var(--teal-700);font-weight:500}
+.pn-janela{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right}
+.pn-janela b{color:var(--ink);font-weight:600}
+
+/* --- cabeçalhos de seção --- */
+.pn-secao{margin:26px 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pn-secao h2{
+  margin:0;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.01em
+}
+.pn-secao .nivel{
+  font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--teal-700);background:var(--teal-50);border:1px solid var(--teal-100);
+  border-radius:5px;padding:2px 7px
+}
+.pn-secao p{margin:0;font-size:12.5px;color:var(--muted);flex:1 1 240px}
+
+/* --- tiles de KPI --- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(232px,100%),1fr));gap:12px}
+.kpi{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden
+}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sc,var(--line-2))}
+.kpi-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kpi-nome{font-size:12px;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.kpi-valor{font-size:30px;font-weight:700;color:var(--ink);line-height:1.15;margin-top:2px}
+.kpi-valor .un{font-size:16px;font-weight:600;color:var(--muted);margin-left:2px}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.kpi-rodape{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.semaforo{
+  display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px 2px 7px;
+  font-size:11px;font-weight:700;letter-spacing:.02em;border:1px solid transparent
+}
+.semaforo .pt{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 8px}
+.sem-bom{color:#0a7a0a;background:#e8f7e8;border-color:#bfe8bf}
+.sem-atencao{color:#8a6100;background:#fef6e0;border-color:#f6e2ab}
+.sem-critico{color:#a92c2c;background:#fdecec;border-color:#f3c9c9}
+.sem-neutro{color:#5a6f79;background:#eef2f4;border-color:#dbe4e8}
+.tend{font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.tend.sobe{color:#0a7a0a}.tend.desce{color:#a92c2c}.tend.igual{color:var(--muted)}
+.kpi-meta{font-size:11px;color:var(--tinta-3)}
+.kpi-barra{height:5px;border-radius:3px;background:#eef2f4;overflow:hidden;margin-top:9px}
+.kpi-barra i{display:block;height:100%;border-radius:3px;background:var(--sc,var(--teal-600))}
+
+/* --- tira de higiene --- */
+.higiene{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(178px,100%),1fr));gap:10px}
+.hig{
+  background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
+  display:flex;align-items:center;gap:11px
+}
+.hig .n{font-size:22px;font-weight:700;line-height:1;min-width:34px}
+.hig .t{font-size:12px;color:var(--ink-2);line-height:1.35}
+.hig.alerta .n{color:var(--s-critico)}
+.hig.aviso .n{color:#8a6100}
+.hig.ok .n{color:#0a7a0a}
+
+/* --- cartões de gráfico --- */
+.graficos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;align-items:start}
+.tabelas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));gap:14px;align-items:start}
+.gcard{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0
+}
+.gcard.largo{grid-column:1/-1}
+.gcard h3{margin:0 0 3px;font-size:14px;font-weight:700;color:var(--ink)}
+.gcard .dica{margin:0 0 14px;font-size:12px;color:var(--muted)}
+.gcard svg{display:block;max-width:100%;height:auto;overflow:visible}
+
+/* --- funil --- */
+.funil{display:flex;flex-direction:column;gap:2px}
+.fase{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:center}
+.fase-nome{font-size:12.5px;color:var(--ink-2);font-weight:500;text-align:right}
+.fase-barra{position:relative;height:34px;background:#f3f6f7;border-radius:5px;overflow:hidden}
+.fase-barra i{display:block;height:100%;border-radius:5px;background:var(--fc)}
+.fase-rot{
+  position:absolute;inset:0;display:flex;align-items:center;gap:8px;padding:0 10px;
+  font-size:12.5px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)
+}
+.fase-rot.fora{color:var(--ink);text-shadow:none}
+.fase-rot .pct{font-weight:500;opacity:.85}
+.queda{
+  display:grid;grid-template-columns:132px 1fr;gap:12px;font-size:11.5px;color:var(--muted);
+  padding:1px 0 1px 0
+}
+.queda > span:last-child{display:flex;align-items:center;gap:6px}
+.queda b{font-weight:700}
+.queda .ruim{color:var(--s-critico)}
+.queda .boa{color:#0a7a0a}
+
+/* --- legenda e barras horizontais --- */
+.legenda{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.leg{display:flex;align-items:center;gap:9px;font-size:12.5px}
+.leg .mk{width:11px;height:11px;border-radius:3px;flex:0 0 11px}
+.leg .nm{color:var(--ink-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leg .vl{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.leg .pc{color:var(--muted);font-size:11.5px;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donut-centro{font-size:11.5px;fill:var(--tinta-3)}
+.donut-num{font-size:26px;font-weight:700;fill:var(--tinta)}
+
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hbar-linha{display:grid;grid-template-columns:118px 1fr;gap:11px;align-items:center}
+.hbar-nome{font-size:12.5px;color:var(--ink-2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-trilho{position:relative;height:24px;display:flex;align-items:center;gap:8px}
+.hbar-trilho i{display:block;height:20px;border-radius:0 4px 4px 0;background:var(--bc);min-width:2px}
+.hbar-val{font-size:12px;color:var(--ink);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hbar-val span{color:var(--muted);font-weight:500}
+
+/* --- tabela --- */
+.pn-tabela{width:100%;border-collapse:collapse;font-size:13px}
+.pn-tabela th,.pn-tabela td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}
+.pn-tabela th:first-child,.pn-tabela td:first-child{text-align:left}
+.pn-tabela thead th{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line-2)
+}
+.pn-tabela td{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.pn-tabela td:first-child{color:var(--ink);font-weight:500}
+.pn-tabela tbody tr:last-child td{border-bottom:0}
+.pn-tabela .destaque{color:#0a7a0a;font-weight:700}
+.pn-tabela .zero{color:var(--s-critico);font-weight:600}
+
+/* --- insights e resumo --- */
+.insights{display:flex;flex-direction:column;gap:9px}
+.ins{
+  display:grid;grid-template-columns:26px 1fr;gap:11px;background:var(--card);
+  border:1px solid var(--line);border-left:3px solid var(--ic,var(--line-2));
+  border-radius:9px;padding:12px 14px
+}
+.ins .ic{font-size:15px;line-height:1.25}
+.ins h4{margin:0 0 3px;font-size:13.5px;font-weight:700;color:var(--ink)}
+.ins p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.ins .acao{
+  display:block;margin-top:6px;font-size:12.5px;color:var(--teal-700);font-weight:600
+}
+.resumo{
+  background:linear-gradient(180deg,var(--teal-50),var(--card));
+  border:1px solid var(--teal-100);border-radius:12px;padding:18px 20px
+}
+.resumo h3{margin:0 0 8px;font-size:15px;color:var(--teal-900)}
+.resumo p{margin:0 0 10px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.resumo p:last-child{margin-bottom:0}
+.resumo b{color:var(--ink)}
+.recos{margin:0;padding-left:0;list-style:none;counter-reset:reco}
+.recos li{
+  counter-increment:reco;position:relative;padding:11px 0 11px 40px;
+  border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink-2);line-height:1.5
+}
+.recos li:last-child{border-bottom:0}
+.recos li::before{
+  content:counter(reco);position:absolute;left:0;top:11px;width:25px;height:25px;
+  border-radius:50%;background:var(--teal-700);color:#fff;display:grid;place-items:center;
+  font-size:12px;font-weight:700
+}
+.recos li b{color:var(--ink)}
+.recos .porque{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+
+/* --- metas --- */
+.metas-box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.metas-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(196px,100%),1fr));gap:12px;margin-top:12px}
+.meta-campo label{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.meta-campo input{
+  width:100%;border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;
+  background:#fcfdfd;font-size:13px;font-variant-numeric:tabular-nums
+}
+.meta-campo input:focus{outline:0;border-color:var(--teal-500);background:#fff}
+.nota-dados{
+  margin-top:22px;background:#fdfcf6;border:1px solid #ece3c8;border-radius:10px;
+  padding:13px 16px;font-size:12.5px;color:#6b5a2a;line-height:1.55
+}
+.nota-dados b{color:#4a3d18}
+.pn-tooltip{
+  position:fixed;z-index:80;background:#12222b;color:#fff;border-radius:7px;padding:6px 10px;
+  font-size:12px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.2)
+}
+.pn-tooltip.on{opacity:1}
+@media (max-width:767px){
+  #painel{padding:14px 12px 32px}
+  .fase,.queda{grid-template-columns:92px 1fr;gap:8px}
+  .hbar-linha{grid-template-columns:88px 1fr;gap:8px}
+  .kpi-valor{font-size:26px}
+  .pn-janela{margin-left:0;text-align:left;width:100%}
+}
+
 /* ---------- Card ---------- */
 .card{
   background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px;
@@ -464,6 +685,7 @@ body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
       <div id="upd" class="upd"></div>
       <div class="spacer"></div>
       <div class="visoes" role="group" aria-label="Modo de visualiza&ccedil;&atilde;o">
+        <button type="button" data-visao="painel">Painel</button>
         <button type="button" class="on" data-visao="quadro">Quadro</button>
         <button type="button" data-visao="grade">Por etapa</button>
       </div>
@@ -505,6 +727,7 @@ body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
   <div id="tabs"></div>
   <div id="banner-slot"></div>
   <main id="board"></main>
+  <main id="painel" class="hidden"></main>
 </div>
 
 <div id="toasts"></div>
@@ -560,8 +783,9 @@ const state = {
   expanded: {},       // id+':sum' / id+':hist'
   showLost: false,
   activeTab: null,
-  visao: 'quadro',    // 'quadro' = kanban | 'grade' = uma etapa por vez, em linhas e colunas
+  visao: 'quadro',    // 'painel' | 'quadro' = kanban | 'grade' = uma etapa por vez
   ordem: 'urgencia',  // chave de ORDENS
+  painel: { periodo:'mes', owner:'', prop:'' },
   filters: { q:'', temp:'', prop:'', orig:'', tipo:'', owner:'', fu:false, quick:'' }
 };
 
@@ -887,6 +1111,909 @@ function passaFiltro(l){
   return true;
 }
 function leadsVisiveis(){ return state.leads.filter(passaFiltro); }
+
+/* =========================================================
+   PAINEL EXECUTIVO
+
+   A planilha guarda a FOTO de hoje (o Status atual), não o histórico
+   de mudanças. As únicas datas reais são: Data (entrada do lead),
+   Data Follow-up e Data Visita.
+
+   Por isso o recorte de período é por SAFRA DE ENTRADA: "dos leads que
+   entraram no período escolhido, o que aconteceu com eles até agora".
+   É o recorte que dá taxas de conversão honestas. Os números de estoque
+   (pipeline de hoje) são mostrados à parte e não dependem do período.
+   ========================================================= */
+
+const LS_METAS = 'crm_habitar_metas';
+const LS_PAINEL = 'crm_habitar_painel';
+
+/* Metas: o gestor ajusta; sem meta não existe semáforo. */
+const METAS_PADRAO = {
+  contato: 80,      // % da safra que sai de "Novo"
+  visita: 25,       // % da safra que chega a visitar
+  fechamento: 8,    // % da safra que fecha
+  leadsMes: 100,    // entrada esperada de leads por mês
+  receitaMes: 500000,
+  atrasoTolerado: 5 // follow-ups vencidos aceitáveis
+};
+
+const PERIODOS = [
+  { k:'hoje',   rotulo:'Hoje' },
+  { k:'semana', rotulo:'Semana' },
+  { k:'mes',    rotulo:'Mês' },
+  { k:'ano',    rotulo:'Ano' },
+  { k:'tudo',   rotulo:'Tudo' }
+];
+
+const MESES_CURTOS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+const ETAPAS_MORTAS = ['Fechado', 'Perdido', 'Desqualificado'];
+const ETAPAS_POS_VISITA = ['Visita Realizada', 'Em Proposta', 'Fechado'];
+const ETAPAS_POS_PROPOSTA = ['Em Proposta', 'Fechado'];
+
+function getMetas(){
+  const m = lsGet(LS_METAS, null) || {};
+  const out = {};
+  Object.keys(METAS_PADRAO).forEach(k => {
+    const v = Number(m[k]);
+    out[k] = (isFinite(v) && v >= 0 && m[k] !== '' && m[k] != null) ? v : METAS_PADRAO[k];
+  });
+  return out;
+}
+
+/* ---------------- janelas de tempo ---------------- */
+function inicioSemana(d){
+  const x = new Date(d.getTime());
+  const dia = (x.getDay() + 6) % 7;        // segunda = 0
+  x.setDate(x.getDate() - dia);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function somaDias(d, n){ const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+function somaMeses(d, n){ const x = new Date(d.getTime()); x.setMonth(x.getMonth() + n); return x; }
+
+function janela(chave){
+  const hoje = hoje0();
+  switch (chave){
+    case 'hoje':
+      return { ini:hoje, fim:hoje, rotulo:'hoje',
+               iniAnt:somaDias(hoje,-1), fimAnt:somaDias(hoje,-1), rotuloAnt:'ontem' };
+    case 'semana': {
+      const ini = inicioSemana(hoje);
+      return { ini:ini, fim:hoje, rotulo:'esta semana',
+               iniAnt:somaDias(ini,-7), fimAnt:somaDias(ini,-1), rotuloAnt:'semana passada' };
+    }
+    case 'ano': {
+      const ini = new Date(hoje.getFullYear(), 0, 1);
+      return { ini:ini, fim:hoje, rotulo:'este ano',
+               iniAnt:new Date(hoje.getFullYear()-1,0,1), fimAnt:new Date(hoje.getFullYear()-1,11,31),
+               rotuloAnt:'ano passado' };
+    }
+    case 'tudo':
+      return { ini:null, fim:null, rotulo:'desde o começo', iniAnt:null, fimAnt:null, rotuloAnt:'' };
+    default: {
+      const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      return { ini:ini, fim:hoje, rotulo:'este mês',
+               iniAnt:somaMeses(ini,-1), fimAnt:somaDias(ini,-1), rotuloAnt:'mês passado' };
+    }
+  }
+}
+
+function dentro(d, ini, fim){
+  if (!d) return false;
+  if (!ini) return true;
+  const t = d.getTime();
+  return t >= ini.getTime() && t <= fim.getTime();
+}
+
+function fmtData(d){ return d ? pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear() : ''; }
+
+/* ---------------- métricas ---------------- */
+function baseDoPainel(){
+  const f = state.painel;
+  return state.leads.filter(l => {
+    if (f.owner && norm(l.owner) !== f.owner) return false;
+    if (f.prop && norm(l.property) !== f.prop) return false;
+    return true;
+  });
+}
+
+/* Safra = leads que ENTRARAM na janela. Mede o que aconteceu com eles até hoje. */
+function safra(base, ini, fim){
+  const leads = ini ? base.filter(l => dentro(l.date, ini, fim)) : base.slice();
+  const visitou = l => l.visitDate && l.visitDate.getTime() <= hoje0().getTime()
+                    || ETAPAS_POS_VISITA.indexOf(l.status) >= 0;
+  const contatados = leads.filter(l => l.status !== 'Novo').length;
+  const visitados  = leads.filter(visitou).length;
+  const propostas  = leads.filter(l => ETAPAS_POS_PROPOSTA.indexOf(l.status) >= 0).length;
+  const fechadosL  = leads.filter(l => l.status === 'Fechado');
+  const perdidos   = leads.filter(l => l.status === 'Perdido' || l.status === 'Desqualificado').length;
+  const receita    = fechadosL.reduce((s, l) => s + moedaNum(l.closedValue), 0);
+  const pct = (a, b) => b > 0 ? (a / b) * 100 : 0;
+  return {
+    leads: leads,
+    total: leads.length,
+    contatados: contatados,
+    visitados: visitados,
+    propostas: propostas,
+    fechados: fechadosL.length,
+    perdidos: perdidos,
+    receita: receita,
+    ticket: fechadosL.length ? receita / fechadosL.length : 0,
+    taxaContato: pct(contatados, leads.length),
+    taxaVisita: pct(visitados, leads.length),
+    taxaProposta: pct(propostas, leads.length),
+    taxaFechamento: pct(fechadosL.length, leads.length)
+  };
+}
+
+/* Estoque = a foto de hoje. Não depende do período escolhido. */
+function estoque(base){
+  const hoje = hoje0();
+  const ativos = base.filter(l => ETAPAS_MORTAS.indexOf(l.status) === -1);
+  const qualificados = ativos.filter(l => l.status !== 'Novo');
+  const atrasados = base.filter(l => fuState(l) === 'late');
+  const maisAntigo = atrasados.reduce((m, l) => Math.max(m, fuDias(l)), 0);
+  const novosParados = base.filter(l => l.status === 'Novo' && l.date && diasEntre(hoje, l.date) >= 7);
+  const semDono = ativos.filter(l => !l.owner);
+  const semProximoPasso = qualificados.filter(l => !l.nextStep);
+  const futuroSemData = base.filter(l => l.status === 'Follow-up Futuro' && !l.followUp);
+  const semTemperatura = ativos.filter(l => !l.temperature);
+  return {
+    ativos: ativos, qualificados: qualificados,
+    atrasados: atrasados, atrasoMaximo: maisAntigo,
+    novosParados: novosParados, semDono: semDono,
+    semProximoPasso: semProximoPasso, futuroSemData: futuroSemData,
+    semTemperatura: semTemperatura,
+    emProposta: base.filter(l => l.status === 'Em Proposta'),
+    valorEmProposta: base.filter(l => l.status === 'Em Proposta')
+                         .reduce((s, l) => s + moedaNum(l.budget), 0)
+  };
+}
+
+/* ---------------- semáforos ---------------- */
+/* Regra única, aplicada a todos: >= meta verde; >= 70% da meta amarelo; abaixo vermelho.
+   Em indicadores onde menos é melhor, a regra inverte e usa a tolerância. */
+const FAIXA_ATENCAO = 0.7;
+
+function semaforoMaior(valor, meta){
+  if (!meta) return 'neutro';
+  if (valor >= meta) return 'bom';
+  if (valor >= meta * FAIXA_ATENCAO) return 'atencao';
+  return 'critico';
+}
+function semaforoMenor(valor, tolerancia){
+  if (valor === 0) return 'bom';
+  if (valor <= tolerancia) return 'atencao';
+  return 'critico';
+}
+const SEM_ROTULO = { bom:'No alvo', atencao:'Atenção', critico:'Abaixo', neutro:'Sem meta' };
+const SEM_COR    = { bom:'#0ca30c', atencao:'#fab219', critico:'#d03b3b', neutro:'#9db0b8' };
+
+function selo(nivel){
+  return '<span class="semaforo sem-' + nivel + '"><span class="pt"></span>' + SEM_ROTULO[nivel] + '</span>';
+}
+function tendencia(atual, anterior, rotuloAnt, menosEhMelhor){
+  if (!rotuloAnt) return '';
+  if (anterior === 0 && atual === 0) return '<span class="tend igual">= igual a ' + rotuloAnt + '</span>';
+  if (anterior === 0) return '<span class="tend sobe">novo vs ' + rotuloAnt + '</span>';
+  const d = ((atual - anterior) / Math.abs(anterior)) * 100;
+  if (Math.abs(d) < 1) return '<span class="tend igual">= estável vs ' + rotuloAnt + '</span>';
+  const subiu = d > 0;
+  const bom = menosEhMelhor ? !subiu : subiu;
+  return '<span class="tend ' + (bom ? 'sobe' : 'desce') + '">' +
+         (subiu ? '▲' : '▼') + ' ' + Math.abs(d).toFixed(0) + '% vs ' + rotuloAnt + '</span>';
+}
+
+function tileKPI(o){
+  const cor = SEM_COR[o.nivel];
+  const barra = (o.meta && o.progresso != null)
+    ? '<div class="kpi-barra"><i style="width:' + Math.max(2, Math.min(100, o.progresso)) + '%"></i></div>'
+    : '';
+  return '<div class="kpi" style="--sc:' + cor + '">' +
+    '<div class="kpi-topo"><span class="kpi-nome">' + esc(o.nome) + '</span>' + selo(o.nivel) + '</div>' +
+    '<div class="kpi-valor">' + o.valor + (o.unidade ? '<span class="un">' + o.unidade + '</span>' : '') + '</div>' +
+    (o.sub ? '<div class="kpi-sub">' + o.sub + '</div>' : '') +
+    barra +
+    '<div class="kpi-rodape">' + (o.tend || '') +
+      (o.meta ? '<span class="kpi-meta">meta ' + o.meta + '</span>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+/* ---------------- gráficos ---------------- */
+/* Rosca: fatias com 2px de respiro, cada uma rotulada fora do desenho. */
+function donut(fatias, total, centroRotulo){
+  const R = 62, ESP = 26, C = 2 * Math.PI * R;
+  let acumulado = 0;
+  const arcos = fatias.filter(f => f.valor > 0).map(f => {
+    const frac = f.valor / total;
+    const comp = Math.max(0, C * frac - 2);
+    const el = '<circle cx="80" cy="80" r="' + R + '" fill="none" stroke="' + f.cor + '"' +
+      ' stroke-width="' + ESP + '" stroke-dasharray="' + comp.toFixed(2) + ' ' + (C - comp).toFixed(2) + '"' +
+      ' stroke-dashoffset="' + (-acumulado).toFixed(2) + '" transform="rotate(-90 80 80)">' +
+      '<title>' + esc(f.nome) + ': ' + f.valor + ' (' + (frac * 100).toFixed(0) + '%)</title></circle>';
+    acumulado += C * frac;
+    return el;
+  }).join('');
+  return '<svg viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Distribuição por temperatura">' +
+    '<circle cx="80" cy="80" r="' + R + '" fill="none" stroke="#eef2f4" stroke-width="' + ESP + '"></circle>' +
+    arcos +
+    '<text x="80" y="74" text-anchor="middle" class="donut-num">' + total + '</text>' +
+    '<text x="80" y="92" text-anchor="middle" class="donut-centro">' + esc(centroRotulo) + '</text>' +
+  '</svg>';
+}
+
+/* Série temporal: barras verticais, eixo com respiro no viewBox, rótulo só no pico e no último. */
+function serieTemporal(pontos, titulo){
+  if (!pontos.length) return '<p class="dica">Sem dados no período.</p>';
+  const L = 640, A = 190, padE = 34, padD = 10, padT = 18, padB = 30;
+  const larg = L - padE - padD, alt = A - padT - padB;
+  const maxV = Math.max(1, ...pontos.map(p => p.valor));
+  const topo = Math.ceil(maxV / 5) * 5 || 5;
+  const passo = larg / pontos.length;
+  const lBarra = Math.max(3, Math.min(17, passo - 7)); // marcas finas: o dado é a altura, não a massa
+  const y = v => padT + alt - (v / topo) * alt;
+
+  const grade = [0, 0.5, 1].map(t => {
+    const vy = padT + alt - t * alt, val = Math.round(topo * t);
+    return '<line x1="' + padE + '" y1="' + vy + '" x2="' + (L - padD) + '" y2="' + vy +
+           '" stroke="#e6ecee" stroke-width="1"></line>' +
+           '<text x="' + (padE - 7) + '" y="' + (vy + 4) + '" text-anchor="end" font-size="11" fill="#7a8f99">' + val + '</text>';
+  }).join('');
+
+  const idxMax = pontos.reduce((mi, p, i) => p.valor > pontos[mi].valor ? i : mi, 0);
+  const barras = pontos.map((p, i) => {
+    const cx = padE + i * passo + passo / 2;
+    const h = Math.max(p.valor > 0 ? 2 : 0, ((p.valor / topo) * alt));
+    const bx = cx - lBarra / 2;
+    const rot = (i === idxMax || i === pontos.length - 1) && p.valor > 0
+      ? '<text x="' + cx + '" y="' + (y(p.valor) - 6) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#12222b">' + p.valor + '</text>'
+      : '';
+    return '<g class="pn-barra" data-tip="' + esc(p.rotuloLongo + ': ' + p.valor + (p.valor === 1 ? ' lead' : ' leads')) + '">' +
+      '<rect x="' + bx + '" y="' + padT + '" width="' + lBarra + '" height="' + alt + '" fill="transparent"></rect>' +
+      '<rect x="' + bx + '" y="' + (y(p.valor)) + '" width="' + lBarra + '" height="' + h + '" rx="4" fill="#2a78d6"></rect>' +
+      rot + '</g>';
+  }).join('');
+
+  const salto = Math.ceil(pontos.length / 12);
+  const eixoX = pontos.map((p, i) => {
+    if (i % salto !== 0 && i !== pontos.length - 1) return '';
+    const cx = padE + i * passo + passo / 2;
+    return '<text x="' + cx + '" y="' + (A - 10) + '" text-anchor="middle" font-size="11" fill="#7a8f99">' + esc(p.rotulo) + '</text>';
+  }).join('');
+
+  return '<svg viewBox="0 0 ' + L + ' ' + A + '" role="img" aria-label="' + esc(titulo) + '">' +
+    grade + barras +
+    '<line x1="' + padE + '" y1="' + (padT + alt) + '" x2="' + (L - padD) + '" y2="' + (padT + alt) + '" stroke="#c7d3d7" stroke-width="1"></line>' +
+    eixoX +
+  '</svg>';
+}
+
+function pontosDaSerie(base, chave){
+  const hoje = hoje0();
+  const pts = [];
+  const conta = (ini, fim) => base.filter(l => dentro(l.date, ini, fim)).length;
+
+  if (chave === 'ano' || chave === 'tudo'){
+    let ini;
+    if (chave === 'ano') ini = new Date(hoje.getFullYear(), 0, 1);
+    else {
+      const datas = base.map(l => l.date).filter(Boolean).sort((a,b) => a - b);
+      ini = datas.length ? new Date(datas[0].getFullYear(), datas[0].getMonth(), 1) : new Date(hoje.getFullYear(), 0, 1);
+      const limite = somaMeses(new Date(hoje.getFullYear(), hoje.getMonth(), 1), -17);
+      if (ini < limite) ini = limite;
+    }
+    let cur = new Date(ini.getTime());
+    while (cur <= hoje){
+      const fimMes = new Date(cur.getFullYear(), cur.getMonth() + 1, 0);
+      fimMes.setHours(0,0,0,0);
+      pts.push({
+        rotulo: MESES_CURTOS[cur.getMonth()],
+        rotuloLongo: MESES_CURTOS[cur.getMonth()] + '/' + cur.getFullYear(),
+        valor: conta(cur, fimMes)
+      });
+      cur = somaMeses(cur, 1);
+    }
+    return pts;
+  }
+
+  let ini;
+  if (chave === 'mes') ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  else ini = somaDias(hoje, -13);
+  let cur = new Date(ini.getTime());
+  while (cur <= hoje){
+    pts.push({
+      rotulo: pad2(cur.getDate()) + '/' + pad2(cur.getMonth()+1),
+      rotuloLongo: fmtData(cur),
+      valor: conta(cur, cur)
+    });
+    cur = somaDias(cur, 1);
+  }
+  return pts;
+}
+
+/* Agrupa por um campo, com rótulo original e conversão da fatia. */
+function agrupaPor(leads, campo, rotuloVazio){
+  const mapa = {};
+  leads.forEach(l => {
+    const bruto = (l[campo] || '').trim();
+    const k = norm(bruto) || '__vazio__';
+    if (!mapa[k]) mapa[k] = { nome: bruto || rotuloVazio, total:0, fechados:0, receita:0, vazio: !bruto };
+    mapa[k].total++;
+    if (l.status === 'Fechado'){ mapa[k].fechados++; mapa[k].receita += moedaNum(l.closedValue); }
+  });
+  return Object.keys(mapa).map(k => mapa[k]).sort((a, b) => b.total - a.total);
+}
+
+/* ---------------- insights automáticos ---------------- */
+/* Cada regra só entra se tiver evidência numérica e uma ação possível. */
+const PESO = { critico:0, atencao:1, bom:2 };
+
+function gerarInsights(s, e, metas, origens, empreendimentos, funil){
+  const ins = [];
+  const pct = (a, b) => b > 0 ? Math.round((a / b) * 100) : 0;
+  const totalNovos = state.leads.filter(l => l.status === 'Novo').length;
+
+  if (e.novosParados.length){
+    const p = pct(e.novosParados.length, totalNovos || e.novosParados.length);
+    ins.push({
+      nivel: p >= 30 ? 'critico' : 'atencao', icone:'⏳',
+      titulo: e.novosParados.length + ' leads novos parados há mais de 7 dias',
+      texto: 'São ' + p + '% de tudo que está em "Novo". Lead de imóvel esfria em dias: quem não é atendido na primeira semana normalmente já comprou com outro corretor ou desistiu.',
+      acao: 'Abra a etapa Novo, ordene por "Mais antigos" e faça a primeira ligação hoje.'
+    });
+  }
+  if (e.atrasados.length){
+    ins.push({
+      nivel: e.atrasados.length > metas.atrasoTolerado ? 'critico' : 'atencao', icone:'🔔',
+      titulo: e.atrasados.length + ' follow-ups vencidos',
+      texto: 'O mais antigo está ' + e.atrasoMaximo + ' dias atrasado. Cada um desses é um cliente que esperou um retorno seu e não recebeu.',
+      acao: 'Clique na pílula "Follow-up atrasado" no quadro para ver só esses.'
+    });
+  }
+  if (s.total >= 5 && s.taxaContato < metas.contato){
+    ins.push({
+      nivel: s.taxaContato < metas.contato * FAIXA_ATENCAO ? 'critico' : 'atencao', icone:'📞',
+      titulo: 'Taxa de contato em ' + s.taxaContato.toFixed(0) + '%, abaixo da meta de ' + metas.contato + '%',
+      texto: 'De ' + s.total + ' leads que entraram ' + janela(state.painel.periodo).rotulo + ', ' +
+             (s.total - s.contatados) + ' continuam sem nenhum atendimento registrado.',
+      acao: 'Antes de pedir mais leads, atenda os que já chegaram — é o investimento de retorno mais rápido.'
+    });
+  }
+  if (funil.gargalo && funil.gargalo.perdidos >= 5 && funil.gargalo.de.valor >= 5){
+    ins.push({
+      nivel: funil.gargalo.perdaPct >= 60 ? 'critico' : 'atencao', icone:'🔻',
+      titulo: 'Maior vazamento: ' + funil.gargalo.de.nome + ' → ' + funil.gargalo.para.nome,
+      texto: funil.gargalo.perdidos + ' pessoas param aí — passam só ' + (100 - funil.gargalo.perdaPct).toFixed(0) +
+             '% (' + funil.gargalo.para.valor + ' de ' + funil.gargalo.de.valor +
+             '). É onde o processo perde mais gente em número absoluto.',
+      acao: 'Ataque esta etapa antes das outras: melhorar 10 pontos aqui vale mais que dobrar a entrada de leads.'
+    });
+  }
+  const furada = origens.filter(o => !o.vazio && o.fechados === 0 && o.total >= 8 &&
+                                     o.total / Math.max(1, s.total) >= 0.12)[0];
+  if (furada){
+    ins.push({
+      nivel:'atencao', icone:'📉',
+      titulo: 'Origem "' + furada.nome + '" não converteu nenhuma venda',
+      texto: furada.total + ' leads vieram daí no período e nenhum fechou. Ou o público está errado, ou o atendimento desse canal é diferente.',
+      acao: 'Compare o que é prometido nesse canal com o que o cliente encontra na visita.'
+    });
+  }
+  const campea = origens.filter(o => !o.vazio && o.total >= 5 && o.fechados > 0)
+                        .sort((a,b) => (b.fechados/b.total) - (a.fechados/a.total))[0];
+  if (campea){
+    ins.push({
+      nivel:'bom', icone:'🏆',
+      titulo: 'Origem "' + campea.nome + '" é a que mais fecha',
+      texto: pct(campea.fechados, campea.total) + '% dos leads dessa origem viraram venda (' +
+             campea.fechados + ' de ' + campea.total + ')' +
+             (campea.receita > 0 ? ', somando ' + moedaFmt(campea.receita) : '') + '.',
+      acao: 'É onde vale colocar mais verba e mais tempo seu.'
+    });
+  }
+  const campeao = empreendimentos.filter(x => !x.vazio && x.fechados > 0)
+                                 .sort((a,b) => b.receita - a.receita)[0];
+  if (campeao){
+    ins.push({
+      nivel:'bom', icone:'🏢',
+      titulo: campeao.nome + ' lidera em receita',
+      texto: campeao.fechados + (campeao.fechados === 1 ? ' venda' : ' vendas') + ' e ' + moedaFmt(campeao.receita) +
+             ' de ' + campeao.total + ' leads interessados.',
+      acao: 'Use os argumentos que funcionaram aqui nos leads dos outros empreendimentos.'
+    });
+  }
+  if (e.semDono.length){
+    ins.push({
+      nivel:'atencao', icone:'👤',
+      titulo: e.semDono.length + ' leads ativos sem responsável',
+      texto: 'Sem dono definido, todo mundo acha que outra pessoa vai atender — e ninguém atende.',
+      acao: 'Preencha a coluna Responsável na planilha para esses leads.'
+    });
+  }
+  if (e.ativos.length && e.semTemperatura.length / e.ativos.length > 0.5){
+    ins.push({
+      nivel:'atencao', icone:'🌡️',
+      titulo: pct(e.semTemperatura.length, e.ativos.length) + '% dos leads ativos estão sem temperatura',
+      texto: 'Sem esse campo, não dá para separar quem está pronto para comprar de quem só está olhando — e a fila de prioridade do dia fica cega.',
+      acao: 'Classifique ao menos os leads que já tiveram conversa: quente, morno ou frio.'
+    });
+  }
+  if (e.futuroSemData.length){
+    ins.push({
+      nivel:'atencao', icone:'📅',
+      titulo: e.futuroSemData.length + ' em "Follow-up Futuro" sem data de retorno',
+      texto: 'Quem está parado nessa etapa sem data marcada não volta a aparecer em lugar nenhum.',
+      acao: 'Defina uma Data Follow-up para cada um, ou traga de volta para a etapa real.'
+    });
+  }
+  if (e.semProximoPasso.length){
+    ins.push({
+      nivel:'atencao', icone:'❓',
+      titulo: e.semProximoPasso.length + ' negociações sem próximo passo definido',
+      texto: 'São leads que já avançaram, mas ninguém escreveu o que fazer em seguida. Negociação sem próximo passo é negociação parada.',
+      acao: 'Preencha a coluna Próximo Passo — é o campo que vira a sua lista de tarefas do dia.'
+    });
+  }
+  if (e.emProposta.length){
+    ins.push({
+      nivel:'bom', icone:'💼',
+      titulo: e.emProposta.length + (e.emProposta.length === 1 ? ' proposta aberta' : ' propostas abertas') + ' agora',
+      texto: 'Somam ' + moedaFmt(e.valorEmProposta) + ' em orçamento declarado. É o dinheiro mais perto de entrar.',
+      acao: 'Dê a essas negociações a primeira hora do seu dia.'
+    });
+  }
+  if (s.fechados > 0 && s.receita > 0){
+    ins.push({
+      nivel:'bom', icone:'💰',
+      titulo: s.fechados + (s.fechados === 1 ? ' venda fechada' : ' vendas fechadas') + ' na safra do período',
+      texto: moedaFmt(s.receita) + ' em vendas, ticket médio de ' + moedaFmt(s.ticket) + '.',
+      acao: ''
+    });
+  }
+  return ins.sort((a, b) => PESO[a.nivel] - PESO[b.nivel]);
+}
+
+/* ---------------- resumo executivo ---------------- */
+function resumoExecutivo(s, sAnt, e, metas, j, funil){
+  const p = [];
+  const variacao = sAnt && j.rotuloAnt && sAnt.total > 0
+    ? ((s.total - sAnt.total) / sAnt.total) * 100 : null;
+
+  p.push('Entraram <b>' + s.total + (s.total === 1 ? ' lead' : ' leads') + '</b> ' + j.rotulo +
+    (variacao !== null
+      ? ', ' + (variacao >= 0 ? 'uma alta' : 'uma queda') + ' de <b>' + Math.abs(variacao).toFixed(0) +
+        '%</b> em relação à ' + j.rotuloAnt + ' (' + sAnt.total + ')'
+      : '') + '. ' +
+    (s.total > 0
+      ? 'Desses, <b>' + s.contatados + '</b> receberam atendimento (' + s.taxaContato.toFixed(0) + '%), <b>' +
+        s.visitados + '</b> visitaram um imóvel (' + s.taxaVisita.toFixed(0) + '%) e <b>' + s.fechados +
+        '</b> fecharam negócio (' + s.taxaFechamento.toFixed(1) + '%)' +
+        (s.receita > 0 ? ', somando <b>' + moedaFmt(s.receita) + '</b>' : '') + '.'
+      : 'Sem entrada de leads no período.'));
+
+  if (funil.gargalo && funil.gargalo.de.valor >= 3 && funil.gargalo.perdidos > 0){
+    p.push('O funil perde mais gente entre <b>' + funil.gargalo.de.nome + '</b> e <b>' + funil.gargalo.para.nome +
+      '</b>: de ' + funil.gargalo.de.valor + ' para ' + funil.gargalo.para.valor + ', ou seja <b>' +
+      funil.gargalo.perdidos + ' pessoas</b> (' + funil.gargalo.perdaPct.toFixed(0) + '% de perda). ' +
+      'É o ponto onde uma melhora pequena muda o resultado final, porque tudo que passa por ali chega às etapas seguintes.');
+  }
+
+  const urgencias = [];
+  if (e.atrasados.length) urgencias.push('<b>' + e.atrasados.length + ' follow-ups vencidos</b> (o mais antigo há ' + e.atrasoMaximo + ' dias)');
+  if (e.novosParados.length) urgencias.push('<b>' + e.novosParados.length + ' leads novos sem atendimento há mais de uma semana</b>');
+  if (e.semDono.length) urgencias.push('<b>' + e.semDono.length + ' leads sem responsável</b>');
+  p.push('O pipeline de hoje tem <b>' + e.ativos.length + ' leads vivos</b>, sendo <b>' + e.qualificados.length +
+    '</b> em negociação de verdade (fora da etapa Novo)' +
+    (e.emProposta.length ? ' e <b>' + e.emProposta.length + '</b> com proposta na mesa' : '') + '. ' +
+    (urgencias.length
+      ? 'Exigem ação imediata: ' + urgencias.join('; ') + '.'
+      : 'Nenhuma pendência de atendimento em aberto — a operação está em dia.'));
+
+  const alvos = [
+    { ok: s.taxaContato >= metas.contato, nome:'contato' },
+    { ok: s.taxaVisita >= metas.visita, nome:'visita' },
+    { ok: s.taxaFechamento >= metas.fechamento, nome:'fechamento' }
+  ];
+  const batidas = alvos.filter(a => a.ok);
+  let veredito;
+  if (s.total < 5) veredito = 'O volume do período é pequeno demais para tirar conclusões de percentual — olhe os números absolutos e o estoque acumulado.';
+  else if (batidas.length === 3) veredito = 'As três taxas do funil estão no alvo. O limitador agora é volume de entrada, não conversão.';
+  else if (batidas.length === 0) veredito = 'Nenhuma das três taxas do funil bateu a meta. Antes de investir em mais leads, o processo de atendimento precisa de ajuste.';
+  else veredito = 'No alvo em ' + batidas.map(a => a.nome).join(' e ') + '; abaixo em ' +
+    alvos.filter(a => !a.ok).map(a => a.nome).join(' e ') + '.';
+  p.push(veredito);
+  return p.map(t => '<p>' + t + '</p>').join('');
+}
+
+function recomendacoes(ins, s, e, metas){
+  const rec = [];
+  ins.filter(i => i.nivel !== 'bom' && i.acao).slice(0, 4).forEach(i => {
+    rec.push({ texto: i.acao, porque: i.titulo });
+  });
+  if (e.emProposta.length){
+    rec.push({
+      texto: 'Estabeleça um prazo para cada proposta aberta e registre a resposta na planilha.',
+      porque: e.emProposta.length + ' propostas na mesa somando ' + moedaFmt(e.valorEmProposta) + ' — é a receita mais próxima'
+    });
+  }
+  rec.push({
+    texto: 'Crie duas colunas na planilha: <b>Data Proposta</b> e <b>Data Fechamento</b>.',
+    porque: 'Hoje a planilha só guarda a foto de agora. Com essas duas datas, o painel passa a mostrar vendas por mês de verdade, tempo médio de fechamento e velocidade do funil'
+  });
+  return rec.slice(0, 6);
+}
+
+/* ---------------- montagem do painel ---------------- */
+function montaFunil(s){
+  const fases = [
+    { nome:'Leads recebidos', valor:s.total,      cor:'var(--f1)' },
+    { nome:'Contatados',      valor:s.contatados, cor:'var(--f2)' },
+    { nome:'Visitaram',       valor:s.visitados,  cor:'var(--f3)' },
+    { nome:'Com proposta',    valor:s.propostas,  cor:'var(--f4)' },
+    { nome:'Fecharam',        valor:s.fechados,   cor:'var(--f5)' }
+  ];
+  /* O gargalo é onde se perde mais GENTE, não onde o percentual é pior:
+     uma queda de 100% sobre 8 pessoas importa menos que 93% sobre 112. */
+  let gargalo = null;
+  for (let i = 1; i < fases.length; i++){
+    const de = fases[i-1], para = fases[i];
+    if (de.valor <= 0) continue;
+    const perdidos = de.valor - para.valor;
+    const perda = (perdidos / de.valor) * 100;
+    if (!gargalo || perdidos > gargalo.perdidos ||
+        (perdidos === gargalo.perdidos && perda > gargalo.perdaPct)){
+      gargalo = { de:de, para:para, perdaPct:perda, perdidos:perdidos };
+    }
+  }
+
+  const base = Math.max(1, s.total);
+  const linhas = fases.map((f, i) => {
+    const largura = (f.valor / base) * 100;
+    const pctTotal = base ? (f.valor / base) * 100 : 0;
+    const fora = largura < 34;
+    const rotulo = '<div class="fase-rot' + (fora ? ' fora' : '') + '"' +
+      (fora ? ' style="padding-left:' + (largura + 1.5) + '%"' : '') + '>' +
+      '<span>' + f.valor + '</span><span class="pct">' + pctTotal.toFixed(0) + '% do total</span></div>';
+    let queda = '';
+    if (i < fases.length - 1){
+      const prox = fases[i+1];
+      const conv = f.valor > 0 ? (prox.valor / f.valor) * 100 : 0;
+      const ruim = conv < 50;
+      queda = '<div class="queda"><span></span><span>↓ passam <b class="' + (ruim ? 'ruim' : 'boa') + '">' +
+        conv.toFixed(0) + '%</b> para ' + esc(prox.nome.toLowerCase()) + '</span></div>';
+    }
+    return '<div class="fase"><div class="fase-nome">' + esc(f.nome) + '</div>' +
+      '<div class="fase-barra" title="' + esc(f.nome + ': ' + f.valor) + '">' +
+      '<i style="width:' + Math.max(f.valor > 0 ? 1.5 : 0, largura) + '%;--fc:' + f.cor + '"></i>' + rotulo +
+      '</div></div>' + queda;
+  }).join('');
+
+  return { html:'<div class="funil">' + linhas + '</div>', gargalo:gargalo, fases:fases };
+}
+
+function montaTemperatura(leads){
+  const defs = [
+    { chave:'quente',  nome:'Quente',  cor:'#d03b3b' },
+    { chave:'morno',   nome:'Morno',   cor:'#eda100' },
+    { chave:'frio',    nome:'Frio',    cor:'#5598e7' },
+    { chave:'cliente', nome:'Cliente', cor:'#1baf7a' },
+    { chave:'',        nome:'Sem classificação', cor:'#b6c3c8' }
+  ];
+  const fatias = defs.map(d => ({
+    nome:d.nome, cor:d.cor,
+    valor: leads.filter(l => l.temperature === d.chave).length
+  }));
+  const total = leads.length;
+  const legenda = fatias.map(f =>
+    '<div class="leg"><span class="mk" style="background:' + f.cor + '"></span>' +
+    '<span class="nm">' + esc(f.nome) + '</span>' +
+    '<span class="vl">' + f.valor + '</span>' +
+    '<span class="pc">' + (total ? Math.round((f.valor/total)*100) : 0) + '%</span></div>'
+  ).join('');
+  return '<div class="donut-wrap">' + donut(fatias, Math.max(total,1), 'leads ativos') +
+         '<div class="legenda" style="flex:1;min-width:150px">' + legenda + '</div></div>';
+}
+
+function montaBarras(itens, cores, totalRef){
+  if (!itens.length) return '<p class="dica">Sem dados no período.</p>';
+  const max = Math.max(...itens.map(i => i.total));
+  return '<div class="hbars">' + itens.map((it, i) => {
+    const larg = (it.total / max) * 100;
+    const taxa = it.total ? Math.round((it.fechados / it.total) * 100) : 0;
+    return '<div class="hbar-linha">' +
+      '<div class="hbar-nome" title="' + esc(it.nome) + '">' + esc(it.nome) + '</div>' +
+      '<div class="hbar-trilho">' +
+        '<i style="width:' + Math.max(1.5, larg) + '%;--bc:' + cores[i % cores.length] + '"></i>' +
+        '<span class="hbar-val">' + it.total + ' <span>· ' + taxa + '% fecham</span></span>' +
+      '</div></div>';
+  }).join('') + '</div>';
+}
+
+function montaTabela(itens, rotuloCol){
+  if (!itens.length) return '<p class="dica">Sem dados no período.</p>';
+  const linhas = itens.slice(0, 8).map(it => {
+    const taxa = it.total ? (it.fechados / it.total) * 100 : 0;
+    /* zero só vira alerta quando há volume suficiente para significar alguma coisa */
+    const classe = it.fechados ? 'destaque' : (it.total >= 10 ? 'zero' : '');
+    return '<tr><td>' + esc(it.nome) + '</td>' +
+      '<td>' + it.total + '</td>' +
+      '<td class="' + classe + '">' + it.fechados + '</td>' +
+      '<td>' + taxa.toFixed(0) + '%</td>' +
+      '<td>' + (it.receita > 0 ? moedaFmt(it.receita) : '—') + '</td></tr>';
+  }).join('');
+  return '<div style="overflow-x:auto"><table class="pn-tabela">' +
+    '<thead><tr><th>' + rotuloCol + '</th><th>Leads</th><th>Vendas</th><th>Conv.</th><th>Receita</th></tr></thead>' +
+    '<tbody>' + linhas + '</tbody></table></div>';
+}
+
+function opcoesUnicas(campo){
+  const vistos = {}, itens = [];
+  state.leads.forEach(l => {
+    const v = (l[campo] || '').trim();
+    if (!v) return;
+    const k = norm(v);
+    if (vistos[k]) return;
+    vistos[k] = true;
+    itens.push({ k:k, nome:v });
+  });
+  return itens.sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+function renderPainel(){
+  const alvo = $('#painel');
+  const metas = getMetas();
+  const j = janela(state.painel.periodo);
+  const base = baseDoPainel();
+  const s = safra(base, j.ini, j.fim);
+  const sAnt = j.iniAnt ? safra(base, j.iniAnt, j.fimAnt) : null;
+  const e = estoque(base);
+  const funil = montaFunil(s);
+
+  const leadsDoRecorte = j.ini ? s.leads : base;
+  const origens = agrupaPor(leadsDoRecorte, 'origin', 'Sem origem').slice(0, 6);
+  const empreendimentos = agrupaPor(leadsDoRecorte, 'property', 'Sem empreendimento');
+  const responsaveis = agrupaPor(leadsDoRecorte, 'owner', 'Sem responsável');
+  const ins = gerarInsights(s, e, metas, origens, empreendimentos, funil);
+  const recos = recomendacoes(ins, s, e, metas);
+
+  /* ----- nível 1: resultado ----- */
+  const metaReceita = metas.receitaMes * fatorPeriodo(state.painel.periodo);
+  const metaLeads = metas.leadsMes * fatorPeriodo(state.painel.periodo);
+  const kpisResultado = [
+    tileKPI({
+      nome:'Vendas fechadas', valor:s.fechados,
+      sub: s.ticket > 0 ? 'ticket médio ' + moedaFmt(s.ticket) : 'nenhuma venda na safra do período',
+      nivel: s.fechados > 0 ? 'bom' : (s.total >= 10 ? 'critico' : 'neutro'),
+      tend: sAnt ? tendencia(s.fechados, sAnt.fechados, j.rotuloAnt) : ''
+    }),
+    tileKPI({
+      nome:'Receita fechada', valor: s.receita > 0 ? moedaFmt(s.receita) : 'R$ 0',
+      sub:'de leads que entraram ' + j.rotulo,
+      nivel: semaforoMaior(s.receita, metaReceita),
+      progresso: metaReceita ? (s.receita / metaReceita) * 100 : null,
+      meta: moedaFmt(metaReceita),
+      tend: sAnt ? tendencia(s.receita, sAnt.receita, j.rotuloAnt) : ''
+    }),
+    tileKPI({
+      nome:'Taxa de fechamento', valor:s.taxaFechamento.toFixed(1), unidade:'%',
+      sub: s.fechados + ' de ' + s.total + ' leads da safra',
+      nivel: s.total >= 5 ? semaforoMaior(s.taxaFechamento, metas.fechamento) : 'neutro',
+      progresso: (s.taxaFechamento / metas.fechamento) * 100,
+      meta: metas.fechamento + '%',
+      tend: sAnt && sAnt.total >= 5 ? tendencia(s.taxaFechamento, sAnt.taxaFechamento, j.rotuloAnt) : ''
+    })
+  ].join('');
+
+  /* ----- nível 2: processo ----- */
+  const kpisProcesso = [
+    tileKPI({
+      nome:'Leads novos', valor:s.total,
+      sub:'entraram ' + j.rotulo,
+      nivel: state.painel.periodo === 'tudo' ? 'neutro' : semaforoMaior(s.total, metaLeads),
+      progresso: metaLeads ? (s.total / metaLeads) * 100 : null,
+      meta: state.painel.periodo === 'tudo' ? '' : Math.round(metaLeads) + ' no período',
+      tend: sAnt ? tendencia(s.total, sAnt.total, j.rotuloAnt) : ''
+    }),
+    tileKPI({
+      nome:'Taxa de contato', valor:s.taxaContato.toFixed(0), unidade:'%',
+      sub:(s.total - s.contatados) + ' ainda sem nenhum atendimento',
+      nivel: s.total >= 5 ? semaforoMaior(s.taxaContato, metas.contato) : 'neutro',
+      progresso: (s.taxaContato / metas.contato) * 100,
+      meta: metas.contato + '%',
+      tend: sAnt && sAnt.total >= 5 ? tendencia(s.taxaContato, sAnt.taxaContato, j.rotuloAnt) : ''
+    }),
+    tileKPI({
+      nome:'Taxa de visita', valor:s.taxaVisita.toFixed(0), unidade:'%',
+      sub:s.visitados + ' visitaram um imóvel',
+      nivel: s.total >= 5 ? semaforoMaior(s.taxaVisita, metas.visita) : 'neutro',
+      progresso: (s.taxaVisita / metas.visita) * 100,
+      meta: metas.visita + '%',
+      tend: sAnt && sAnt.total >= 5 ? tendencia(s.taxaVisita, sAnt.taxaVisita, j.rotuloAnt) : ''
+    })
+  ].join('');
+
+  /* ----- nível 3: higiene (estoque de hoje) ----- */
+  const hig = [
+    { n:e.atrasados.length, t:'follow-ups vencidos', nivel: e.atrasados.length > metas.atrasoTolerado ? 'alerta' : (e.atrasados.length ? 'aviso' : 'ok') },
+    { n:e.novosParados.length, t:'novos parados há +7 dias', nivel: e.novosParados.length ? (e.novosParados.length > 20 ? 'alerta' : 'aviso') : 'ok' },
+    { n:e.semDono.length, t:'ativos sem responsável', nivel: e.semDono.length ? 'aviso' : 'ok' },
+    { n:e.semProximoPasso.length, t:'negociações sem próximo passo', nivel: e.semProximoPasso.length ? 'aviso' : 'ok' },
+    { n:e.futuroSemData.length, t:'adiados sem data de retorno', nivel: e.futuroSemData.length ? 'aviso' : 'ok' }
+  ].map(h => '<div class="hig ' + h.nivel + '"><span class="n">' + h.n + '</span><span class="t">' + esc(h.t) + '</span></div>').join('');
+
+  /* ----- série temporal ----- */
+  const pts = pontosDaSerie(base, state.painel.periodo);
+  const tituloSerie = (state.painel.periodo === 'ano' || state.painel.periodo === 'tudo')
+    ? 'Entrada de leads por mês' : 'Entrada de leads por dia';
+
+  /* ----- filtros ----- */
+  const donos = opcoesUnicas('owner'), imoveis = opcoesUnicas('property');
+  const filtros = '<div class="pn-filtros">' +
+    '<div class="pn-periodos" role="group" aria-label="Período">' +
+      PERIODOS.map(p => '<button type="button" data-periodo="' + p.k + '"' +
+        (state.painel.periodo === p.k ? ' class="on"' : '') + '>' + p.rotulo + '</button>').join('') +
+    '</div>' +
+    '<select id="pn-owner" class="' + (state.painel.owner ? 'on' : '') + '">' +
+      '<option value="">Todos os responsáveis</option>' +
+      donos.map(d => '<option value="' + esc(d.k) + '"' + (state.painel.owner === d.k ? ' selected' : '') + '>' + esc(d.nome) + '</option>').join('') +
+    '</select>' +
+    '<select id="pn-prop" class="' + (state.painel.prop ? 'on' : '') + '">' +
+      '<option value="">Todos os empreendimentos</option>' +
+      imoveis.map(d => '<option value="' + esc(d.k) + '"' + (state.painel.prop === d.k ? ' selected' : '') + '>' + esc(d.nome) + '</option>').join('') +
+    '</select>' +
+    '<div class="pn-janela">' +
+      (j.ini ? 'Safra de <b>' + fmtData(j.ini) + '</b> a <b>' + fmtData(j.fim) + '</b>' : '<b>Todos os leads</b> da planilha') +
+      '<br>' + base.length + ' leads no recorte' +
+    '</div>' +
+  '</div>';
+
+  /* ----- montagem final ----- */
+  alvo.innerHTML = filtros +
+
+    '<div class="pn-secao"><span class="nivel">Nível 1</span><h2>Resultado</h2>' +
+      '<p>O placar. Consequência do que foi feito nas etapas anteriores — não se gerencia diretamente.</p></div>' +
+    '<div class="kpis">' + kpisResultado + '</div>' +
+
+    '<div class="pn-secao"><span class="nivel">Nível 2</span><h2>Processo</h2>' +
+      '<p>O que o time controla no dia a dia. É aqui que a gestão muda o resultado do mês que vem.</p></div>' +
+    '<div class="kpis">' + kpisProcesso + '</div>' +
+
+    '<div class="graficos" style="margin-top:14px">' +
+      '<div class="gcard largo"><h3>Funil de conversão</h3>' +
+        '<p class="dica">Dos ' + s.total + ' leads que entraram ' + j.rotulo + ', onde cada um chegou até hoje.</p>' +
+        funil.html + '</div>' +
+    '</div>' +
+
+    '<div class="pn-secao"><span class="nivel">Nível 3</span><h2>Higiene da operação</h2>' +
+      '<p>A foto de hoje, independente do período. Cada número aqui é uma tarefa, não um indicador.</p></div>' +
+    '<div class="higiene">' + hig + '</div>' +
+
+    '<div class="pn-secao"><h2>Distribuição</h2><p>De onde vêm os leads e em que estado eles estão.</p></div>' +
+    '<div class="graficos">' +
+      '<div class="gcard largo"><h3>' + tituloSerie + '</h3>' +
+        '<p class="dica">Ritmo de entrada. Passe o mouse para ver cada barra.</p>' +
+        serieTemporal(pts, tituloSerie) + '</div>' +
+      '<div class="gcard"><h3>Temperatura dos leads ativos</h3>' +
+        '<p class="dica">Só quem está vivo no funil hoje (' + e.ativos.length + ' leads).</p>' +
+        montaTemperatura(e.ativos) + '</div>' +
+      '<div class="gcard"><h3>Origem dos leads</h3>' +
+        '<p class="dica">Volume por canal e quanto de cada um vira venda.</p>' +
+        montaBarras(origens, ['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#4a3aa7'], s.total) + '</div>' +
+    '</div>' +
+
+    '<div class="tabelas" style="margin-top:14px">' +
+      '<div class="gcard"><h3>Por empreendimento</h3>' +
+        '<p class="dica">Onde está o interesse e onde está a receita.</p>' +
+        montaTabela(empreendimentos, 'Empreendimento') + '</div>' +
+      '<div class="gcard"><h3>Por responsável</h3>' +
+        '<p class="dica">Carga de trabalho e conversão de cada um.</p>' +
+        montaTabela(responsaveis, 'Responsável') + '</div>' +
+    '</div>' +
+
+    '<div class="pn-secao"><h2>Leitura automática</h2><p>Gerado a partir dos números acima, na ordem do que é mais urgente.</p></div>' +
+    '<div class="insights">' +
+      (ins.length
+        ? ins.slice(0, 6).map(i => '<div class="ins" style="--ic:' + SEM_COR[i.nivel] + '">' +
+            '<span class="ic">' + i.icone + '</span><div><h4>' + esc(i.titulo) + '</h4><p>' + i.texto + '</p>' +
+            (i.acao ? '<span class="acao">→ ' + i.acao + '</span>' : '') + '</div></div>').join('')
+        : '<div class="ins"><span class="ic">✅</span><div><h4>Nada exige atenção agora</h4>' +
+          '<p>Nenhum indicador cruzou os limites configurados nas metas.</p></div></div>') +
+    '</div>' +
+
+    '<div class="pn-secao"><h2>Resumo executivo</h2></div>' +
+    '<div class="resumo">' + resumoExecutivo(s, sAnt, e, metas, j, funil) + '</div>' +
+
+    '<div class="pn-secao"><h2>Recomendações</h2><p>Na ordem de impacto, da mais urgente para a mais estrutural.</p></div>' +
+    '<div class="gcard"><ol class="recos">' +
+      recos.map(r => '<li>' + r.texto + '<span class="porque">' + r.porque + '</span></li>').join('') +
+    '</ol></div>' +
+
+    '<div class="pn-secao"><h2>Metas</h2><p>Os semáforos comparam os indicadores com estes números. Ajuste para a realidade da Habitar.</p></div>' +
+    '<div class="metas-box"><div class="metas-grade">' +
+      campoMeta('contato', 'Taxa de contato (%)', metas.contato) +
+      campoMeta('visita', 'Taxa de visita (%)', metas.visita) +
+      campoMeta('fechamento', 'Taxa de fechamento (%)', metas.fechamento) +
+      campoMeta('leadsMes', 'Leads novos por mês', metas.leadsMes) +
+      campoMeta('receitaMes', 'Receita por mês (R$)', metas.receitaMes) +
+      campoMeta('atrasoTolerado', 'Follow-ups vencidos tolerados', metas.atrasoTolerado) +
+    '</div>' +
+    '<p class="kpi-meta" style="margin-top:12px">Regra dos semáforos: <b>verde</b> a partir da meta, ' +
+    '<b>amarelo</b> a partir de ' + Math.round(FAIXA_ATENCAO * 100) + '% dela, <b>vermelho</b> abaixo disso. ' +
+    'As metas de leads e receita são mensais e o painel converte automaticamente para o período escolhido.</p></div>' +
+
+    '<div class="nota-dados"><b>O que este painel não consegue medir.</b> A planilha guarda a situação atual de cada ' +
+    'lead, não o histórico de mudanças: as únicas datas são a de entrada, a do follow-up e a da visita. ' +
+    'Por isso "vendas de setembro" aqui significa <b>vendas de leads que entraram em setembro</b>, e não vendas ' +
+    'assinadas em setembro. Para ter as duas leituras, basta criar as colunas <b>Data Proposta</b> e ' +
+    '<b>Data Fechamento</b> na planilha — o painel passa a usá-las. Propostas contam quem está em "Em Proposta" ' +
+    'mais quem já fechou; visitas contam quem tem Data Visita já passada ou está numa etapa posterior à visita.</div>';
+
+  ligarEventosPainel();
+}
+
+function campoMeta(chave, rotulo, valor){
+  return '<div class="meta-campo"><label for="meta-' + chave + '">' + esc(rotulo) + '</label>' +
+    '<input id="meta-' + chave + '" type="number" min="0" step="1" data-meta="' + chave + '" value="' + valor + '"></div>';
+}
+
+function fatorPeriodo(k){
+  if (k === 'hoje') return 1 / 30;
+  if (k === 'semana') return 7 / 30;
+  if (k === 'ano') return 12;
+  if (k === 'tudo') return 0;
+  return 1;
+}
+
+let tipEl = null;
+function ligarEventosPainel(){
+  const alvo = $('#painel');
+
+  $$('[data-periodo]', alvo).forEach(b => b.addEventListener('click', () => {
+    state.painel.periodo = b.getAttribute('data-periodo');
+    lsSet(LS_PAINEL, state.painel);
+    renderPainel();
+    window.scrollTo(0, 0);
+  }));
+
+  const so = $('#pn-owner', alvo), sp = $('#pn-prop', alvo);
+  if (so) so.addEventListener('change', () => { state.painel.owner = so.value; lsSet(LS_PAINEL, state.painel); renderPainel(); });
+  if (sp) sp.addEventListener('change', () => { state.painel.prop = sp.value; lsSet(LS_PAINEL, state.painel); renderPainel(); });
+
+  let tMeta = null;
+  $$('[data-meta]', alvo).forEach(inp => inp.addEventListener('input', () => {
+    clearTimeout(tMeta);
+    tMeta = setTimeout(() => {
+      const m = lsGet(LS_METAS, {}) || {};
+      const v = Number(inp.value);
+      m[inp.getAttribute('data-meta')] = (isFinite(v) && v >= 0) ? v : METAS_PADRAO[inp.getAttribute('data-meta')];
+      lsSet(LS_METAS, m);
+      const foco = inp.id;
+      renderPainel();
+      const volta = document.getElementById(foco);
+      if (volta){ volta.focus(); volta.setSelectionRange(volta.value.length, volta.value.length); }
+    }, 700);
+  }));
+
+  if (!tipEl){
+    tipEl = document.createElement('div');
+    tipEl.className = 'pn-tooltip';
+    document.body.appendChild(tipEl);
+  }
+  $$('.pn-barra', alvo).forEach(g => {
+    g.addEventListener('mouseenter', ev => {
+      tipEl.textContent = g.getAttribute('data-tip');
+      tipEl.classList.add('on');
+    });
+    g.addEventListener('mousemove', ev => {
+      tipEl.style.left = Math.min(window.innerWidth - tipEl.offsetWidth - 10, ev.clientX + 12) + 'px';
+      tipEl.style.top = (ev.clientY - 34) + 'px';
+    });
+    g.addEventListener('mouseleave', () => tipEl.classList.remove('on'));
+  });
+}
 
 /* ================= TOASTS ================= */
 function toast(msg, tipo){
@@ -1250,9 +2377,19 @@ function renderBoard(){
 
 function render(){
   textoAtualizacao();
-  renderPills();
   renderReload();
   renderBanner();
+
+  const noPainel = state.visao === 'painel';
+  document.body.classList.toggle('visao-painel', noPainel);
+  $('#painel').classList.toggle('hidden', !noPainel);
+  $('#board').classList.toggle('hidden', noPainel);
+
+  if (noPainel){
+    renderPainel();
+    return;
+  }
+  renderPills();
   renderBoard();
   $('#btn-filtros-mobile').textContent = filtrosAtivos() ? 'Filtros (' + filtrosAtivos() + ')' : 'Filtros';
 }
@@ -1622,7 +2759,12 @@ function iniciarApp(){
   if (salvos) Object.keys(state.filters).forEach(k => { if (salvos[k] !== undefined) state.filters[k] = salvos[k]; });
 
   const visaoSalva = lsGet(LS_VISAO, null);
-  if (visaoSalva === 'grade' || visaoSalva === 'quadro') state.visao = visaoSalva;
+  if (['grade','quadro','painel'].indexOf(visaoSalva) >= 0) state.visao = visaoSalva;
+
+  const painelSalvo = lsGet(LS_PAINEL, null);
+  if (painelSalvo) Object.keys(state.painel).forEach(k => {
+    if (painelSalvo[k] !== undefined) state.painel[k] = painelSalvo[k];
+  });
   $$('.visoes button').forEach(b => b.classList.toggle('on', b.getAttribute('data-visao') === state.visao));
 
   const ordemSalva = lsGet(LS_ORDEM, null);
