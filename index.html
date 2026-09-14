@@ -293,6 +293,7 @@ body.visao-grade #board{display:block;padding:0 0 26px;overflow-x:visible}
 .fu.late{background:#fee2e2;color:#b91c1c}
 .fu.today{background:var(--or-100);color:var(--or-700)}
 .fu.future{background:#f1f5f9;color:#64748b}
+.fu.sem-data{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 .next{
   margin-top:8px;background:var(--or-50);border:1px solid #fed7aa;border-radius:8px;padding:7px 9px;font-size:12.5px
 }
@@ -534,13 +535,15 @@ const LS_ORDEM   = 'crm_habitar_ordem';
 const cfg = { url: '', token: '' };
 
 const BASE_STATUS = [
-  { name:'Novo',             color:'#2563eb' },
-  { name:'Em Contato',       color:'#ea580c' },
-  { name:'Visita Agendada',  color:'#0d9488' },
-  { name:'Visita Realizada', color:'#4f46e5' },
-  { name:'Desqualificado',   color:'#a16207' },
-  { name:'Fechado',          color:'#16a34a' },
-  { name:'Perdido',          color:'#64748b' }
+  { name:'Novo',              color:'#2563eb' },
+  { name:'Em Contato',        color:'#ea580c' },
+  { name:'Visita Agendada',   color:'#0d9488' },
+  { name:'Visita Realizada',  color:'#4f46e5' },
+  { name:'Em Proposta',       color:'#be185d' },
+  { name:'Follow-up Futuro',  color:'#7e22ce' },
+  { name:'Desqualificado',    color:'#a16207' },
+  { name:'Fechado',           color:'#16a34a' },
+  { name:'Perdido',           color:'#64748b' }
 ];
 const EXTRA_COLOR = '#546e7a';
 const STATUS_VALIDOS = BASE_STATUS.map(s => s.name);
@@ -1027,6 +1030,10 @@ function cardHTML(l, nomes, compacto){
   if (fs === 'late')        fuHTML = '<div class="fu late">&#9873; Atrasado ' + fuDias(l) + 'd</div>';
   else if (fs === 'today')  fuHTML = '<div class="fu today">&#9873; Follow-up hoje</div>';
   else if (fs === 'future') fuHTML = '<div class="fu future">&#128197; Follow-up ' + fmtDM(l.followUp) + '</div>';
+  // parado no "Follow-up Futuro" sem data marcada = ninguem vai lembrar dele
+  if (!fuHTML && l.status === 'Follow-up Futuro'){
+    fuHTML = '<div class="fu sem-data">&#9888; Sem data de retorno</div>';
+  }
 
   const badges = [];
   if (l.temperature) badges.push('<span class="bdg t-' + l.temperature + '">' + TEMP_LABEL[l.temperature] + '</span>');
